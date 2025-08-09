@@ -14,7 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -27,6 +26,7 @@ public class WeatherAPI {
         System.out.print("Enter a city: ");
         Scanner scnr = new Scanner(System.in);                          //prompt user input
         String city = scnr.nextLine();
+        scnr.close();
 
         String fullGeoUrl = baseGeoUrl + city + "&appid=" + apiKey;     //build full url string
         //System.out.println(fullGeoUrl);
@@ -47,11 +47,11 @@ public class WeatherAPI {
         JsonObject geoJson = geoArray.get(0).getAsJsonObject();
         double lattitude = geoJson.get("lat").getAsDouble();                //get lat and lon from json
         double longitude = geoJson.get("lon").getAsDouble();
-        System.out.print("lattitude: " + lattitude + "\nlongitude: " + longitude);
+        System.out.println("lattitude: " + lattitude + "\nlongitude: " + longitude);
 
         //build full url string for weather
         String fullWeatherUrl = baseWeatherUrl + lattitude + "&lon=" + longitude + "&appid=" + apiKey;
-        System.out.println(fullWeatherUrl);
+        //System.out.println(fullWeatherUrl);
         StringBuilder weatherJsonData = null;
         try{
             weatherJsonData = getJsonData(fullWeatherUrl);
@@ -59,6 +59,8 @@ public class WeatherAPI {
         catch(Exception e){System.out.println(e);}
 
         JsonObject weatherJson = JsonParser.parseString(weatherJsonData.toString()).getAsJsonObject();
+        double temperature = weatherJson.getAsJsonObject("main").get("temp").getAsDouble();
+        System.out.printf("Temperature: %.1fF", KelvinToFahrenheit(temperature));
 
 
 
@@ -66,7 +68,8 @@ public class WeatherAPI {
 
     }
 
-    public static StringBuilder getJsonData(String fullUrl) throws Exception{
+    public static StringBuilder getJsonData(String fullUrl) throws Exception
+    {
         
         URL url = new URL(fullUrl);                       //create url object
 
@@ -83,5 +86,9 @@ public class WeatherAPI {
         reader.close();
 
         return result;
+    }
+
+    public static double KelvinToFahrenheit(double K){
+        return (K - 273.15) * 9/5 + 32;
     }
 }
